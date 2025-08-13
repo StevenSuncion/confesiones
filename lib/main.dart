@@ -1,3 +1,5 @@
+//pantalla principal de econ confesiones anonimas metodos de inicio de sesión : google, facebook , instagram, apple 
+
 import 'package:flutter/material.dart';
 
 void main() {
