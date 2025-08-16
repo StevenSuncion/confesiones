@@ -1,8 +1,11 @@
-//pantalla principal de econ confesiones anonimas metodos de inicio de sesión : google, facebook , instagram, apple 
-
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'screens/auth_wrapper.dart';
+import 'services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -14,8 +17,27 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'ECON - Confesiones',
       theme: ThemeData.dark(),
-      home: const LoginScreen(),
+      home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      ),
     );
   }
 }
@@ -173,9 +195,25 @@ class _LoginScreenState extends State<LoginScreen>
     await Future.delayed(const Duration(seconds: 1));
     while (mounted) {
       await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) break;
       await _logoController.forward();
       await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) break;
       await _logoController.reverse();
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    final user = await AuthService.signInWithGoogle();
+    if (user != null && mounted) {
+      // Navigation will be handled by AuthWrapper
+    }
+  }
+
+  Future<void> _signInWithFacebook() async {
+    final user = await AuthService.signInWithFacebook();
+    if (user != null && mounted) {
+      // Navigation will be handled by AuthWrapper
     }
   }
 
@@ -256,14 +294,14 @@ class _LoginScreenState extends State<LoginScreen>
                                 _buildNeonButton(
                                   'Continuar con Google',
                                   null,
-                                  () {},
+                                  _signInWithGoogle,
                                   customIcon: _buildGoogleIcon(),
                                 ),
                                 const SizedBox(height: 20),
                                 _buildNeonButton(
                                   'Continuar con Facebook',
                                   Icons.facebook,
-                                  () {},
+                                  _signInWithFacebook,
                                 ),
                                 const SizedBox(height: 20),
                                 _buildNeonButton(
@@ -570,11 +608,12 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildGoogleIcon() {
-    return Container(
-      width: 24,
-      height: 24,
-      child: CustomPaint(
-        painter: GoogleIconPainter(),
+    return const Text(
+      'G',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
@@ -699,92 +738,7 @@ class SpyGlassesPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
-class GoogleIconPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final strokeWidth = size.width * 0.08;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.35;
-    
-    // Colores oficiales de Google
-    final bluePaint = Paint()
-      ..color = const Color(0xFF4285F4)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    
-    final redPaint = Paint()
-      ..color = const Color(0xFFEA4335)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    
-    final yellowPaint = Paint()
-      ..color = const Color(0xFFFBBC05)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    
-    final greenPaint = Paint()
-      ..color = const Color(0xFF34A853)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    
-    // Arco azul (superior)
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -1.57, // -90°
-      1.05,  // 60°
-      false,
-      bluePaint,
-    );
-    
-    // Arco rojo (derecha superior)
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -0.52, // -30°
-      1.05,  // 60°
-      false,
-      redPaint,
-    );
-    
-    // Arco amarillo (derecha inferior)
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      0.52,  // 30°
-      1.05,  // 60°
-      false,
-      yellowPaint,
-    );
-    
-    // Arco verde (izquierda)
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      1.57,  // 90°
-      1.57,  // 90°
-      false,
-      greenPaint,
-    );
-    
-    // Línea horizontal (parte de la G)
-    canvas.drawLine(
-      Offset(center.dx, center.dy - strokeWidth / 2),
-      Offset(center.dx + radius * 0.6, center.dy - strokeWidth / 2),
-      bluePaint,
-    );
-    
-    // Línea vertical corta (parte de la G)
-    canvas.drawLine(
-      Offset(center.dx + radius * 0.6, center.dy - strokeWidth / 2),
-      Offset(center.dx + radius * 0.6, center.dy + strokeWidth),
-      bluePaint,
-    );
-  }
-  
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
+
 
 class InstagramIconPainter extends CustomPainter {
   @override
@@ -827,80 +781,42 @@ class AppleIconPainter extends CustomPainter {
     final paint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
+
+    final w = size.width;
+    final h = size.height;
     
-    // Logo oficial de Apple - forma exacta
-    final path = Path();
-    
-    // Comenzar desde la parte superior
-    path.moveTo(size.width * 0.5, size.height * 0.25);
-    
-    // Curva superior derecha
-    path.cubicTo(
-      size.width * 0.65, size.height * 0.2,
-      size.width * 0.8, size.height * 0.35,
-      size.width * 0.78, size.height * 0.55,
-    );
-    
-    // Curva media derecha
-    path.cubicTo(
-      size.width * 0.76, size.height * 0.7,
-      size.width * 0.65, size.height * 0.85,
-      size.width * 0.5, size.height * 0.9,
-    );
-    
-    // Curva inferior izquierda
-    path.cubicTo(
-      size.width * 0.35, size.height * 0.85,
-      size.width * 0.24, size.height * 0.7,
-      size.width * 0.22, size.height * 0.55,
-    );
-    
-    // Curva superior izquierda
-    path.cubicTo(
-      size.width * 0.2, size.height * 0.35,
-      size.width * 0.35, size.height * 0.2,
-      size.width * 0.5, size.height * 0.25,
-    );
-    
-    path.close();
-    
-    // Dibujar el cuerpo principal
-    canvas.drawPath(path, paint);
-    
-    // Mordida característica de Apple
-    final bitePath = Path();
-    bitePath.addOval(Rect.fromCircle(
-      center: Offset(size.width * 0.7, size.height * 0.4),
-      radius: size.width * 0.1,
+    // Hoja
+    canvas.save();
+    canvas.translate(w * 0.58, h * 0.05);
+    canvas.rotate(-0.4);
+    final leafPath = Path();
+    leafPath.addOval(Rect.fromCenter(
+      center: Offset.zero,
+      width: w * 0.12,
+      height: w * 0.22,
     ));
-    
-    // Cortar la mordida
-    canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
-    canvas.drawPath(path, paint);
-    canvas.drawPath(bitePath, Paint()..blendMode = BlendMode.clear);
+    canvas.drawPath(leafPath, paint);
     canvas.restore();
     
-    // Hoja característica
-    final leafPath = Path();
-    leafPath.moveTo(size.width * 0.52, size.height * 0.25);
-    leafPath.cubicTo(
-      size.width * 0.58, size.height * 0.12,
-      size.width * 0.68, size.height * 0.08,
-      size.width * 0.72, size.height * 0.05,
-    );
-    leafPath.cubicTo(
-      size.width * 0.74, size.height * 0.08,
-      size.width * 0.7, size.height * 0.15,
-      size.width * 0.62, size.height * 0.2,
-    );
-    leafPath.cubicTo(
-      size.width * 0.57, size.height * 0.22,
-      size.width * 0.52, size.height * 0.25,
-      size.width * 0.52, size.height * 0.25,
-    );
-    leafPath.close();
+    // Cuerpo principal
+    final applePath = Path();
     
-    canvas.drawPath(leafPath, paint);
+    applePath.moveTo(w * 0.5, h * 0.18);
+    applePath.cubicTo(w * 0.2, h * 0.12, w * 0.02, h * 0.4, w * 0.02, h * 0.62);
+    applePath.cubicTo(w * 0.02, h * 0.88, w * 0.25, h * 0.98, w * 0.5, h * 0.98);
+    applePath.cubicTo(w * 0.75, h * 0.98, w * 0.98, h * 0.88, w * 0.98, h * 0.62);
+    applePath.cubicTo(w * 0.98, h * 0.45, w * 0.88, h * 0.32, w * 0.78, h * 0.28);
+    
+    // Mordida
+    applePath.cubicTo(w * 0.74, h * 0.24, w * 0.68, h * 0.24, w * 0.66, h * 0.28);
+    applePath.cubicTo(w * 0.64, h * 0.32, w * 0.64, h * 0.38, w * 0.66, h * 0.42);
+    applePath.cubicTo(w * 0.68, h * 0.46, w * 0.74, h * 0.46, w * 0.78, h * 0.42);
+    
+    applePath.cubicTo(w * 0.85, h * 0.38, w * 0.9, h * 0.28, w * 0.82, h * 0.12);
+    applePath.cubicTo(w * 0.7, h * 0.08, w * 0.6, h * 0.12, w * 0.5, h * 0.18);
+    
+    applePath.close();
+    canvas.drawPath(applePath, paint);
   }
   
   @override

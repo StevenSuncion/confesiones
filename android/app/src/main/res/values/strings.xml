@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">confesiones</string>
+    <string name="facebook_app_id">1476789873496872</string>
+    <string name="facebook_client_token">3e8f6df0d4c38514d53d4b4dc6f17f55</string>
+    <string name="facebook_app_secret">f9521901e23431aaf5e8b10d02f7a061</string>
+    <string name="fb_login_protocol_scheme">fb1476789873496872</string>
+</resources>

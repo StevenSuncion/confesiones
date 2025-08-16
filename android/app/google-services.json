@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "503306247524",
+    "project_id": "econ-acfb0",
+    "storage_bucket": "econ-acfb0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503306247524:android:08c25033ce07680287ee71",
+        "android_client_info": {
+          "package_name": "com.example.confesiones"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpXdLDvVnQXETfDIlz3CZiqJxp46cY7SI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
